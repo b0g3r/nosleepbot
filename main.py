@@ -20,6 +20,11 @@ url = 'https://nosleepbot.pythonanywhere.com'
 # TODO: create a set of phrases
 # TODO: flask and webhook
 
+class Delay:
+    check = 10  # 1200
+    alarm = 10  # 60
+    wake_up = 10  # 60
+
 
 class State:
     stop = 0
@@ -65,14 +70,14 @@ def check(user):
     bot.sendMessage(user.user_id, text="Ты спишь? А?")
     user.state = State.wait_resp
     user.time = datetime.now()
-    set_event(user, scheduler.enter(60, 1, wakeup, kwargs={'user': user}))  # 60
+    set_event(user, scheduler.enter(Delay.alarm, 1, wakeup, kwargs={'user': user}))  # 60
     user.save()
 
 
 def wakeup(user):
     bot.sendMessage(user.user_id, text="Ты что, уснула?")
     if (datetime.now() - user.time).seconds < 1200:
-        set_event(user, scheduler.enter(60, 1, wakeup, kwargs={'user': user}))  # 60
+        set_event(user, scheduler.enter(Delay.wake_up, 1, wakeup, kwargs={'user': user}))  # 60
     else:
         user.state = State.stop
         user.save()
@@ -83,7 +88,7 @@ def start(user):
     bot.sendMessage(user.user_id, "Напишу тебе через 20 минут!")
     user.state = State.start
     user.time = datetime.now()
-    set_event(user, scheduler.enter(1200, 1, check, kwargs={'user': user}))  # 1200
+    set_event(user, scheduler.enter(Delay.check, 1, check, kwargs={'user': user}))  # 1200
     user.save()
 
 

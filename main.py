@@ -58,7 +58,7 @@ def run_pending():
     while 1:
         scheduler.run(blocking=False)
         time.sleep(1)
-
+        app.logger.debug(str(scheduler.queue))
 
 def restart_users_event():
     for user in User.select().where(User.state != State.stop):
@@ -154,6 +154,7 @@ def init():
 
     t = Thread(target=run_pending)
     t.start()
+    app.logger.info('app started')
 
 
 init()

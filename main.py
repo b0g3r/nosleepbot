@@ -1,3 +1,4 @@
+import logging
 import telepot
 import sched
 from sys import argv
@@ -150,10 +151,14 @@ def init():
     else:
         bot.setWebhook('')
         bot.message_loop(handle, relax=0.1, timeout=10)
+        app.logger.addHandler(logging.StreamHandler())
+
     restart_users_event()
 
     t = Thread(target=run_pending)
     t.start()
+
+    app.logger.setLevel(logging.DEBUG)
     app.logger.info('app started')
 
 

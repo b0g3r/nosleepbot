@@ -1,25 +1,44 @@
 import telepot
-import telepot.api
-import urllib3
 import sched
 from sys import argv
 from datetime import datetime
 import time
-from peewee import *
+from peewee import Model, SqliteDatabase, CharField, DateField, SmallIntegerField
+import os
+
+from flask import Flask, request, url_for, Response
+
+app = Flask('nosleepbot')
+
+events = {}
+scheduler = sched.scheduler(time.time, time.sleep)
+token = '246227695:AAG1KJzBGfJeQqoeWXXvRp86VnjI1V29Q7g'
+bot = telepot.Bot(token)
+db = SqliteDatabase('users.db')
+url = 'https://nosleepbot.pythonanywhere.com'
 
 # TODO: logging
 # TODO: create a set of phrases
 # TODO: flask and webhook
+
+
+@app.route('/')
+def index():
+    return 'hello world'
+
+@app.route('/webhook/%s' % token, methods=['POST'])
+def webhook_get_updates():
+    json = request.get_json(cache=False)
+    if json is not None:
+        handle(json['message'])
+    return Response(status=200)
+
 class State:
     stop = 0
     start = 1
     wait_resp = 2
     wake_up = 3
 
-events = {}
-scheduler = sched.scheduler(time.time, time.sleep)
-bot = telepot.Bot(token=argv[1])
-db = SqliteDatabase('users.db')
 
 class User(Model):
     user_id = CharField(unique=True)
@@ -56,7 +75,7 @@ def wakeup(user):
     else:
         user.state = State.stop
         user.save()
-        print(datetime.now(), user.user_id, 'уснул')
+        app.logger.info('%s %s %s', datetime.now(), user.user_id, 'уснул')
 
 
 def start(user):
@@ -71,17 +90,15 @@ def stop(user):
     user.state = State.stop
     user.time = datetime.now()
     cancel_event(user)
-    print(datetime.now(), user.user_id, 'ушел спать')
+    app.logger.info('%s %s %s', datetime.now(), user.user_id, 'ушел спать')
     user.save()
 
-def handler(message):
+def handle(message):
     content_type, chat_type, user_id = telepot.glance(message)
-    print(message['chat']['first_name'], message['text'])
+    app.logger.info('%s %s', message['chat']['first_name'], message['text'])
     try:
-        print('user find')
         user = User.get(User.user_id == str(user_id))
     except User.DoesNotExist:
-        print('user create')
         user = User.create(user_id=str(user_id))
 
     if '/start' in message['text']:
@@ -94,15 +111,26 @@ def handler(message):
             cancel_event(user)
             start(user)
 
-if __name__ == '__main__':
-    db.connect()
-    db.create_tables([User], safe=True)
-    db.close()
-    for user in User.select().where(User.state != State.stop):
-        bot.sendMessage(user.user_id, "У нас тут произошла какая-то ошибка, поэтому давай начнем всё сначала")
-        start(user)
-    bot.message_loop(handler, relax=0.1, timeout=10)
+db.connect()
+db.create_tables([User], safe=True)
+db.close()
+if os.environ.get('LOCAL') != 'YES':
+    import urllib3
+    proxy_url = 'http://proxy.server:3128'
+    telepot.api._pools = {
+        'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+    }
+    telepot.api._onetime_pool_spec = (
+        urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30)
+    )
+    bot.setWebhook('%s/%s/%s' % (url, 'webhook', token))
+else:
+    bot.setWebhook('')
+    bot.message_loop(handle, relax=0.1, timeout=10)
 
-    while True:
-        scheduler.run(blocking=False)
-        time.sleep(1)
+for user in User.select().where(User.state != State.stop):
+    bot.sendMessage(user.user_id, "У нас тут произошла какая-то ошибка, поэтому давай начнем всё сначала")
+    start(user)
+#while True:
+scheduler.run(blocking=False)
+    #time.sleep(1)

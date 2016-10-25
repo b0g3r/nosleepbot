@@ -110,7 +110,6 @@ def init():
     if 'HEROKU' in os.environ:
         app.logger.addHandler(logging.StreamHandler())
         webhook_url = '%s/%s/%s' % (url, 'webhook', token)
-        print(bot.getWebhookInfo(), webhook_url, bot.getWebhookInfo()['url'])
         if webhook_url != bot.getWebhookInfo()['url']:
             bot.setWebhook(webhook_url)
     elif 'LOCAL' in os.environ:
@@ -125,3 +124,4 @@ def init():
     app.logger.setLevel(logging.DEBUG)
     app.logger.info('app started')
 init()
+print(__name__)

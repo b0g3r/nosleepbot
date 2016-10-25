@@ -38,3 +38,8 @@ class State:
     wait_resp = 2
     wake_up = 3
 
+
+if __name__ == '__main__':
+    db_proxy.connect()
+    db_proxy.create_tables([User], safe=True)
+    db_proxy.close()

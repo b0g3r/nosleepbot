@@ -6,8 +6,9 @@ from datetime import datetime
 import time
 import os
 from threading import Thread
-from model import User, Delay, State
-from flask import Flask, request, Response
+from model import User, Delay, State, db_proxy
+from flask import Flask, request, Response, g
+
 
 app = Flask('nosleepbot')
 events = {}
@@ -23,6 +24,16 @@ url = 'https://nosleep-bot-staging.herokuapp.com'
 # TODO: create a decorator for schedule-events
 
 
+@app.before_request
+def before_request():
+    g.db = db_proxy
+    g.db.connect()
+
+
+@app.after_request
+def after_request(response):
+    g.db.close()
+    return response
 
 def cancel_event(user):
     if user.user_id in events:

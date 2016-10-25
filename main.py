@@ -127,6 +127,7 @@ def webhook_get_updates():
 
 
 def init():
+    print('init')
     if 'HEROKU' in os.environ:
         import urllib.request
         urllib.request.urlopen('https://api.telegram.org/bot%s/setWebhook?url=%s/%s/%s' % (token, url, 'webhook', token))

@@ -14,7 +14,7 @@ app = Flask('nosleepbot')
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
 # TODO: url_for
-url = 'https://nosleep-bot-staging.herokuapp.com'
+url = os.environ.get('URL')
 
 # TODO: create a set of phrases
 # TODO: task queue? redis?

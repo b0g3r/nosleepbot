@@ -32,9 +32,9 @@ if 'DEBUG' in os.environ:
         wake_up = 10  # 60
 else:
     class Delay:
-        check = 10  # 1200
-        alarm = 10  # 60
-        wake_up = 10  # 60
+        check = 1200
+        alarm = 60
+        wake_up = 60
 
 class State:
     stop = 0

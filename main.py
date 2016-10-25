@@ -127,12 +127,13 @@ def webhook_get_updates():
 
 
 def init():
-    print('init')
     if 'HEROKU' in os.environ:
-        import urllib.request
+        app.logger.addHandler(logging.StreamHandler())
         webhook_url = '%s/%s/%s' % (url, 'webhook', token)
+        print(bot.getWebhookInfo(), webhook_url, bot.getWebhookInfo()['url'])
         if webhook_url != bot.getWebhookInfo()['url']:
             bot.setWebhook(webhook_url)
+
 
     elif 'LOCAL' in os.environ:
         bot.setWebhook('')
@@ -146,5 +147,4 @@ def init():
 
     app.logger.setLevel(logging.INFO)
     app.logger.info('app started')
-print()
 init()

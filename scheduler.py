@@ -2,10 +2,17 @@ import time
 import sched
 from threading import Thread
 
+
 class Scheduler:
+    __instance = None
     _s = sched.scheduler()
     _events = {}
     queue = _s.queue
+    def __new__(cls):
+        if Scheduler.__instance is None:
+            Scheduler.__instance = object.__new__(cls)
+        return Scheduler.__instance
+
     # TODO: сделать надстройку над стандартной queue, чтобы она ещё и хранила id
     def run(self):
         t = Thread(target=self._run_pending)

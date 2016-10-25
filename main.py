@@ -16,9 +16,8 @@ bot = telepot.Bot(token)
 # TODO: url_for
 url = 'https://nosleep-bot-staging.herokuapp.com'
 
-# TODO: logging
 # TODO: create a set of phrases
-# TODO: flask and webhook
+# TODO: task queue? redis?
 # TODO: create a decorator for schedule-events
 # TODO: просмотр рандомного пользователя онлайн
 
@@ -120,8 +119,10 @@ def init():
     restart_users_event()
 
     scheduler.run()
-
-    app.logger.setLevel(logging.DEBUG)
+    if 'DEBUG' in os.environ:
+        app.logger.setLevel(logging.DEBUG)
+    else:
+        app.logger.setLevel(logging.INFO)
     app.logger.info('app started')
 init()
 print(__name__)

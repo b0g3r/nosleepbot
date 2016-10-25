@@ -25,12 +25,16 @@ class User(Model):
     class Meta:
         database = db_proxy
 
-
-class Delay:
-    check = 10  # 1200
-    alarm = 10  # 60
-    wake_up = 10  # 60
-
+if 'DEBUG' in os.environ:
+    class Delay:
+        check = 10  # 1200
+        alarm = 10  # 60
+        wake_up = 10  # 60
+else:
+    class Delay:
+        check = 10  # 1200
+        alarm = 10  # 60
+        wake_up = 10  # 60
 
 class State:
     stop = 0

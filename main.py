@@ -128,6 +128,7 @@ def webhook_get_updates():
 
 def init():
     if os.environ.get('LOCAL') != 'YES':
+        time.sleep(2)
         bot.setWebhook('%s/%s/%s' % (url, 'webhook', token))
     else:
         bot.setWebhook('')

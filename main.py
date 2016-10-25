@@ -127,10 +127,11 @@ def webhook_get_updates():
 
 
 def init():
-    if os.environ.get('LOCAL') != 'YES':
-        time.sleep(2)
-        bot.setWebhook('%s/%s/%s' % (url, 'webhook', token))
-    else:
+    if 'HEROKU' in os.environ:
+        import urllib.request
+        urllib.request.urlopen('https://api.telegram.org/bot%s/setWebhook?url=%s/%s/%s' % (token, url, 'webhook', token))
+        #bot.setWebhook('%s/%s/%s' % (token, url, 'webhook', token))
+    elif 'LOCAL' in os.environ:
         bot.setWebhook('')
         bot.message_loop(handle, relax=0.3, timeout=10)
         app.logger.addHandler(logging.StreamHandler())

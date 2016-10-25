@@ -4,43 +4,23 @@ import sched
 from sys import argv
 from datetime import datetime
 import time
-from peewee import Model, SqliteDatabase, CharField, DateField, SmallIntegerField
 import os
 from threading import Thread
-from flask import Flask, request, url_for, Response
+from model import User, Delay, State
+from flask import Flask, request, Response
 
 app = Flask('nosleepbot')
 events = {}
 scheduler = sched.scheduler(time.time, time.sleep)
 token = '246227695:AAG1KJzBGfJeQqoeWXXvRp86VnjI1V29Q7g'
 bot = telepot.Bot(token)
-db = SqliteDatabase('users.db')
 url = 'https://nosleepbot.pythonanywhere.com'
 
 # TODO: logging
 # TODO: create a set of phrases
 # TODO: flask and webhook
+# TODO: create a decorator for schedule-events
 
-class Delay:
-    check = 10  # 1200
-    alarm = 10  # 60
-    wake_up = 10  # 60
-
-
-class State:
-    stop = 0
-    start = 1
-    wait_resp = 2
-    wake_up = 3
-
-
-class User(Model):
-    user_id = CharField(unique=True)
-    time = DateField(null=True)
-    state = SmallIntegerField(null=True)
-
-    class Meta:
-        database = db
 
 
 def cancel_event(user):
@@ -135,22 +115,11 @@ def webhook_get_updates():
 
 
 def init():
-    db.connect()
-    db.create_tables([User], safe=True)
-    db.close()
     if os.environ.get('LOCAL') != 'YES':
-        import urllib3
-        proxy_url = 'http://proxy.server:3128'
-        telepot.api._pools = {
-            'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
-        }
-        telepot.api._onetime_pool_spec = (
-            urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30)
-        )
         bot.setWebhook('%s/%s/%s' % (url, 'webhook', token))
     else:
         bot.setWebhook('')
-        bot.message_loop(handle, relax=0.1, timeout=10)
+        bot.message_loop(handle, relax=0.3, timeout=10)
         app.logger.addHandler(logging.StreamHandler())
 
     restart_users_event()
@@ -158,8 +127,7 @@ def init():
     t = Thread(target=run_pending)
     t.start()
 
-    app.logger.setLevel(logging.DEBUG)
+    app.logger.setLevel(logging.INFO)
     app.logger.info('app started')
-
 
 init()

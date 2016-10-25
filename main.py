@@ -145,6 +145,6 @@ def init():
     t = Thread(target=run_pending)
     t.start()
 
-    app.logger.setLevel(logging.INFO)
+    app.logger.setLevel(logging.DEBUG)
     app.logger.info('app started')
 init()

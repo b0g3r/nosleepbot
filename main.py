@@ -14,7 +14,8 @@ events = {}
 scheduler = sched.scheduler(time.time, time.sleep)
 token = '246227695:AAG1KJzBGfJeQqoeWXXvRp86VnjI1V29Q7g'
 bot = telepot.Bot(token)
-url = 'https://nosleepbot.pythonanywhere.com'
+# TODO: url_for
+url = 'https://nosleep-bot-staging.herokuapp.com'
 
 # TODO: logging
 # TODO: create a set of phrases

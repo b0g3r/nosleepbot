@@ -130,7 +130,9 @@ def init():
     print('init')
     if 'HEROKU' in os.environ:
         import urllib.request
-        urllib.request.urlopen('https://api.telegram.org/bot%s/setWebhook?url=%s/%s/%s' % (token, url, 'webhook', token))
+        webhook_url = 'https://api.telegram.org/bot%s/setWebhook?url=%s/%s/%s' % (token, url, 'webhook', token)
+        if webhook_url != bot.getWebhookInfo()['url']:
+            urllib.request.urlopen(webhook_url)
         #bot.setWebhook('%s/%s/%s' % (token, url, 'webhook', token))
     elif 'LOCAL' in os.environ:
         bot.setWebhook('')
@@ -144,5 +146,5 @@ def init():
 
     app.logger.setLevel(logging.INFO)
     app.logger.info('app started')
-
+print()
 init()

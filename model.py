@@ -1,10 +1,14 @@
-
-from peewee import Model, SqliteDatabase, PostgresqlDatabase, CharField, DateField, SmallIntegerField
+from peewee import Model, SqliteDatabase, PostgresqlDatabase, CharField, DateTimeField, SmallIntegerField, TextField
 import os
 from peewee import Proxy
+import telepot
 
 
+token = os.environ['TOKEN_BOT']
+bot = telepot.Bot(token)
 db_proxy = Proxy()
+
+
 if 'HEROKU' in os.environ:
     import urllib.parse
     urllib.parse.uses_netloc.append('postgres')
@@ -16,12 +20,16 @@ elif 'LOCAL' in os.environ:
     db = SqliteDatabase('users.db')
     db_proxy.initialize(db)
 
-
+# TODO: methods for user (sendmessage and other)
 class User(Model):
     user_id = CharField(unique=True)
-    time = DateField(null=True)
+    time = DateTimeField(null=True)
     state = SmallIntegerField(null=True)
+    messages = TextField(default='')
 
+    def send_message(self, text):
+        bot.sendMessage(self.user_id, text)
+        self.messages += 'бот: %s\n' % text
     class Meta:
         database = db_proxy
 

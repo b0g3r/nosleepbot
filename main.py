@@ -16,6 +16,8 @@ token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
 
 # TODO: url_for
+if 'SERVER_NAME' in os.environ:
+    app.config['SERVER_NAME'] = os.environ['SERVER_NAME']
 url = os.environ.get('URL')
 
 # TODO: create a set of phrases
@@ -149,6 +151,7 @@ def init():
     #restart_users_event()
     with app.test_request_context():
         print(url_for('index', _external=True))
+    print(url_for('index', _external=True))
     scheduler.run()
 
     if 'DEBUG' in os.environ:

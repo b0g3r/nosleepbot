@@ -1,13 +1,10 @@
 import logging
 import telepot
-from sys import argv
-from datetime import datetime, timedelta
-import time
+from datetime import datetime
 import os
 from scheduler import Scheduler
-from threading import Thread
 from model import User, Delay, State, db_proxy
-from flask import Flask, request, Response, g
+from flask import Flask, request, Response, g, render_template, url_for
 from peewee import fn
 
 
@@ -100,6 +97,7 @@ def handle(message):
     app.logger.info('%s %s', message['chat']['first_name'], message['text'])
     user, _ = User.get_or_create(user_id=str(user_id))
     user.messages += 'соня: %s\n' % message['text']
+    user.save()
     if '/start' in message['text']:
         start(user)
     elif '/stop' in message['text']:
@@ -116,15 +114,17 @@ def get_messages():
     id = request.form['id']
     messages = User.get(User.id == id).messages
     print(messages)
-    return '123'
+    return messages
 
 @app.route('/')
 def index():
     #TODO: сделать темплейт с ajaxom в messages
-    q = User.select().where(User.state != State.stop).order_by(fn.Random()).get()
-    print(q.user_id)
-    print(type(q))
-    return q.user_id
+
+    q = User.select().where(User.state != State.stop)
+    if q.exists():
+        return render_template('index.html', user_id=q.order_by(fn.Random()).get().id)
+    else:
+        return "Сичас никого нет"
 
 
 @app.route('/webhook/%s' % token, methods=['POST'])
@@ -147,7 +147,8 @@ def init():
         app.logger.addHandler(logging.StreamHandler())
 
     #restart_users_event()
-
+    with app.test_request_context():
+        print(url_for('index', _external=True))
     scheduler.run()
 
     if 'DEBUG' in os.environ:

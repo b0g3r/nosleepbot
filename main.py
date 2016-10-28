@@ -15,14 +15,9 @@ app = Flask('nosleepbot')
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
 
-# TODO: url_for
-if 'SERVER_NAME' in os.environ:
-    app.config['SERVER_NAME'] = os.environ['SERVER_NAME']
-url = os.environ.get('URL')
 
 # TODO: create a set of phrases
 # TODO: create a decorator for schedule-events
-# TODO: просмотр рандомного пользователя онлайн
 
 # TODO: refactor this
 attempts = 10
@@ -50,8 +45,8 @@ def restart_users_event():
             scheduler.set_event(user, Delay.wake_up - delta, wakeup, {'user': user})
 
         else:
-            user.send_message(("Мы обновляли проект и у нас произошла ошибка"
-                                                ":( Тебе придется начать заново"))
+            user.send_message("Мы обновляли проект и у нас произошла не очень страшная ошибка"
+                              ", но тебе придется начать заново: /start")
             user.state = State.stop
             user.save()
 
@@ -97,7 +92,7 @@ def stop(user):
 def handle(message):
     content_type, chat_type, user_id = telepot.glance(message)
     app.logger.info('%s %s', message['chat']['first_name'], message['text'])
-    user, _ = User.get_or_create(user_id=str(user_id))
+    user, _ = User.get_or_create(defaults={'scheduler':scheduler}, user_id=str(user_id))
     user.messages += 'соня: %s\n' % message['text']
     user.save()
     if '/start' in message['text']:
@@ -118,17 +113,18 @@ def get_messages():
     print(messages)
     return messages
 
+
+# TODO: Запилить "Пользователь ушел спать" (пусть /messages возвращает ошибку 404, а ajax это отлавливает?)
+# TODO: Запилить красивую верстку
 @app.route('/')
 def index():
-    #TODO: сделать темплейт с ajaxom в messages
-
     q = User.select().where(User.state != State.stop)
     if q.exists():
         return render_template('index.html', user_id=q.order_by(fn.Random()).get().id)
     else:
         return "Сичас никого нет"
 
-
+# TODO: maybe replace token to secret_key?
 @app.route('/webhook/%s' % token, methods=['POST'])
 def webhook_get_updates():
     json = request.get_json(cache=False)
@@ -140,7 +136,7 @@ def webhook_get_updates():
 def init():
     if 'HEROKU' in os.environ:
         app.logger.addHandler(logging.StreamHandler())
-        webhook_url = '%s/%s/%s' % (url, 'webhook', token)
+        webhook_url = 'https://%s/%s/%s' % (os.environ['URL'], 'webhook', token)
         if webhook_url != bot.getWebhookInfo()['url']:
             bot.setWebhook(webhook_url)
     elif 'LOCAL' in os.environ:
@@ -148,10 +144,7 @@ def init():
         bot.message_loop(handle, relax=0.3, timeout=10)
         app.logger.addHandler(logging.StreamHandler())
 
-    #restart_users_event()
-    with app.test_request_context():
-        print(url_for('index', _external=True))
-    print(url_for('index', _external=True))
+    restart_users_event()
     scheduler.run()
 
     if 'DEBUG' in os.environ:

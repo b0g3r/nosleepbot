@@ -2,7 +2,7 @@ from peewee import Model, SqliteDatabase, PostgresqlDatabase, CharField, DateTim
 import os
 from peewee import Proxy
 import telepot
-
+from datetime import datetime
 
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
@@ -20,16 +20,26 @@ elif 'LOCAL' in os.environ:
     db = SqliteDatabase('users.db')
     db_proxy.initialize(db)
 
+
 # TODO: methods for user (sendmessage and other)
 class User(Model):
     user_id = CharField(unique=True)
     time = DateTimeField(null=True)
     state = SmallIntegerField(null=True)
     messages = TextField(default='')
+    scheduler = None
+
+    def start_cycle(self):
+        self.send_message("Напишу тебе через 20 минут!")
+        self.state = State.start
+        self.time = datetime.now()
+        # scheduler.set_event(user, Delay.check, check, kwargs={'user': user})
+        self.save()
 
     def send_message(self, text):
         bot.sendMessage(self.user_id, text)
         self.messages += 'бот: %s\n' % text
+
     class Meta:
         database = db_proxy
 

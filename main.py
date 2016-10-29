@@ -15,6 +15,7 @@ app = Flask('nosleepbot')
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
 
+# TODO: migrations
 
 # TODO: create a set of phrases
 # TODO: create a decorator for schedule-events
@@ -38,11 +39,11 @@ def restart_users_event():
     for user in User.select().where(User.state != State.stop):
         delta = (datetime.now() - user.time).seconds
         if user.state == State.start and delta < Delay.check:
-            scheduler.set_event(user, Delay.check - delta, check, {'user': user})
+            scheduler.set_event(user, check, Delay.check - delta)
         elif user.state == State.wait_resp and delta < Delay.alarm:
-            scheduler.set_event(user, Delay.alarm - delta, wakeup, {'user': user})
+            scheduler.set_event(user, wakeup, Delay.alarm - delta)
         elif user.state == State.wake_up and delta < attempts*Delay.wake_up:
-            scheduler.set_event(user, Delay.wake_up - delta, wakeup, {'user': user})
+            scheduler.set_event(user, wakeup, Delay.wake_up - delta)
 
         else:
             user.send_message("Мы обновляли проект и у нас произошла не очень страшная ошибка"
@@ -55,7 +56,7 @@ def check(user):
     user.send_message("Ты спишь? А?")
     user.state = State.wait_resp
     user.time = datetime.now()
-    scheduler.set_event(user, Delay.alarm, wakeup, {'user': user})
+    scheduler.set_event(user, wakeup, Delay.alarm)
     user.save()
 
 
@@ -64,7 +65,7 @@ def wakeup(user):
     if (datetime.now() - user.time).seconds < attempts*Delay.wake_up:
         user.state = State.wake_up
         user.save()
-        scheduler.set_event(user, Delay.wake_up, wakeup, kwargs={'user': user})
+        scheduler.set_event(user, wakeup, Delay.wake_up)
     else:
         user.state = State.stop
         user.save()
@@ -148,6 +149,7 @@ def init():
     scheduler.run()
 
     if 'DEBUG' in os.environ:
+        app.config['DEBUG'] = True
         app.logger.setLevel(logging.DEBUG)
     else:
         app.logger.setLevel(logging.INFO)

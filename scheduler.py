@@ -11,7 +11,6 @@ class Scheduler:
     # TODO: сделать надстройку над стандартной queue, чтобы она ещё и хранила id
     queue = _s.queue
 
-
     def __new__(cls):
         if Scheduler.__instance is None:
             Scheduler.__instance = object.__new__(cls)

@@ -3,7 +3,7 @@ import telepot
 from datetime import datetime
 import os
 from scheduler import Scheduler
-from model import User, Delay, State, db_proxy
+from model import User, Delay, db_proxy
 from flask import Flask, request, Response, g, render_template, url_for
 from peewee import fn
 
@@ -14,6 +14,8 @@ app = Flask('nosleepbot')
 
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
+
+# TODO: remove schedule from main
 
 # TODO: migrations
 
@@ -34,7 +36,7 @@ def after_request(response):
     g.db.close()
     return response
 
-
+'''
 def restart_users_event():
     for user in User.select().where(User.state != State.stop):
         delta = (datetime.now() - user.time).seconds
@@ -69,6 +71,7 @@ def wakeup(user):
     else:
         user.state = State.stop
         user.save()
+
         app.logger.info('%s %s %s', datetime.now(), user.user_id, 'уснул')
 
 
@@ -88,14 +91,18 @@ def stop(user):
     scheduler.cancel_event(user)
     app.logger.info('%s %s %s', datetime.now(), user.user_id, 'ушел спать')
     user.save()
-
+'''
 
 def handle(message):
     content_type, chat_type, user_id = telepot.glance(message)
     app.logger.info('%s %s', message['chat']['first_name'], message['text'])
-    user, _ = User.get_or_create(defaults={'scheduler':scheduler}, user_id=str(user_id))
+    user, _ = User.get_or_create(user_id=str(user_id))
+    user.scheduler = scheduler
     user.messages += 'соня: %s\n' % message['text']
+    print(user.state)
     user.save()
+    user.state.handle(user, message['text'])
+    '''
     if '/start' in message['text']:
         start(user)
     elif '/stop' in message['text']:
@@ -105,7 +112,7 @@ def handle(message):
             user.send_message("Смотри мне!")
             scheduler.cancel_event(user)
             start(user)
-
+    '''
 
 @app.route('/messages', methods=['POST'])
 def get_messages():
@@ -119,7 +126,7 @@ def get_messages():
 # TODO: Запилить красивую верстку
 @app.route('/')
 def index():
-    q = User.select().where(User.state != State.stop)
+    #q = User.select().where(User.state != State.stop)
     if q.exists():
         return render_template('index.html', user_id=q.order_by(fn.Random()).get().id)
     else:
@@ -143,7 +150,7 @@ def init():
     elif 'LOCAL' in os.environ:
         bot.setWebhook('')
         bot.message_loop(handle, relax=0.3, timeout=10)
-    restart_users_event()
+    #restart_users_event()
     scheduler.run()
 
     if 'DEBUG' in os.environ:

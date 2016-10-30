@@ -3,10 +3,44 @@ import os
 from peewee import Proxy
 import telepot
 from datetime import datetime
-
 token = os.environ['TOKEN_BOT']
 bot = telepot.Bot(token)
 db_proxy = Proxy()
+
+from state.states import *
+
+
+def num_to_state(state_num):
+    """
+    :type state_num: int
+    :rtype: state._State
+    """
+    state = states.get(state_num)
+    if state:
+        return state
+    else:
+        raise RuntimeError  # refactor this
+
+
+def state_to_num(state):
+    """
+    :type state: state._State
+    :rtype: int
+    """
+    for num, st in states.items():
+        if st is state:
+            return num
+    else:
+        raise RuntimeError  # refactor this
+
+
+states = {
+    0: Start,
+    1: Waiting,
+    2: Checked,
+    3: Stop,
+}
+
 
 
 if 'HEROKU' in os.environ:
@@ -25,9 +59,21 @@ elif 'LOCAL' in os.environ:
 class User(Model):
     user_id = CharField(unique=True)
     time = DateTimeField(null=True)
-    state = SmallIntegerField(null=True)
+    _state = SmallIntegerField(default=0)  # num representation of state
     messages = TextField(default='')
     scheduler = None
+
+    def _get_state(self):
+        return num_to_state(self._state)
+
+    def _set_state(self, state):
+        """
+        :type state: state.states._State
+        """
+        state.set(self)
+        self._state = state_to_num(state)
+
+    state = property(_get_state, _set_state)
 
     def cancel_event(self):
         self.scheduler.cancel_event(self)
@@ -35,36 +81,12 @@ class User(Model):
     def set_event(self, event, delay, **kwargs):
         self.scheduler.set_event(self, event, delay, **kwargs)
 
-    def start_cycle(self):
-        self.send_message("Напишу тебе через 20 минут!")
-        self.state = State.start
-        self.time = datetime.now()
-        # scheduler.set_event(user, Delay.check, check, kwargs={'user': user})
-        self.save()
-
     def send_message(self, text):
         bot.sendMessage(self.user_id, text)
         self.messages += 'бот: %s\n' % text
 
     class Meta:
         database = db_proxy
-
-if 'DEBUG' in os.environ:
-    class Delay:
-        check = 10  # 1200
-        alarm = 10  # 60
-        wake_up = 10  # 60
-else:
-    class Delay:
-        check = 1200
-        alarm = 60
-        wake_up = 60
-
-class State:
-    stop = 0
-    start = 1
-    wait_resp = 2
-    wake_up = 3
 
 
 if __name__ == '__main__':

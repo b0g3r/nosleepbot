@@ -143,14 +143,11 @@ def init():
     elif 'LOCAL' in os.environ:
         bot.setWebhook('')
         bot.message_loop(handle, relax=0.3, timeout=10)
-        app.logger.addHandler(logging.StreamHandler())
-
     restart_users_event()
     scheduler.run()
 
     if 'DEBUG' in os.environ:
         app.config['DEBUG'] = True
-        app.logger.setLevel(logging.DEBUG)
     else:
         app.logger.setLevel(logging.INFO)
     app.logger.info('app started')

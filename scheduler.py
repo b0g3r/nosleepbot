@@ -19,6 +19,7 @@ class Scheduler:
 
     def run(self):
         t = Thread(target=self._run_pending)
+        t.daemon = True
         t.start()
 
     def _run_pending(self):

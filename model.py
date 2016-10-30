@@ -29,6 +29,12 @@ class User(Model):
     messages = TextField(default='')
     scheduler = None
 
+    def cancel_event(self):
+        self.scheduler.cancel_event(self)
+
+    def set_event(self, event, delay, **kwargs):
+        self.scheduler.set_event(self, event, delay, **kwargs)
+
     def start_cycle(self):
         self.send_message("Напишу тебе через 20 минут!")
         self.state = State.start

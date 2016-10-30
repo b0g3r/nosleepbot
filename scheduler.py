@@ -34,4 +34,5 @@ class Scheduler:
 
     def set_event(self, user, event, delay, **kwargs):
         self.cancel_event(user)
-        self._events[user.user_id] = self._s.enter(delay, 1, event, kwargs=kwargs.update(user=user))
+        kwargs.update(user=user)
+        self._events[user.user_id] = self._s.enter(delay, 1, event, kwargs=kwargs)

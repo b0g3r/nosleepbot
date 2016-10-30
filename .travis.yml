@@ -21,9 +21,8 @@ deploy:
   api_key:
     secure: KGDWMVbjmXd7voMtK+2r48vWJBUZQChGx9yIqKwThhY9YTwU9V2lH4yQFy9RtnNT1+mfyFCD3tgiiX4mvOfOrF50hAqs5q0q+tKieuYzRPyVN+R8NF8jalDWy+aQZ6KeIy4e1d8IXJ2UkTAcjHPETMrci7cdAtY3HhgQrzR08iAiiwoMYiWOfR71dLL+xxbmlVbNETC1zYkkxkoiFcpqPOvds4zRMphzG1iOwCwsE0xTPzNrkQQsiOTwtue82bsfcyC9HAYBGHwiBpBFDdXCs+6L3OgoHPZSmuLhOX1vCr3Ka2Kvwx4tj7vAGjsiEozNCrAoGiT/uk6GjqGInkBspCnV0dhx5Aiz7+MeNUxUVoY0lp4QUg5QPRh7rWoHFaheYYZHUPn0u86EyueQozWzbHrAPqMZ4jYhPUD4FBHh2x7B5uS/z2K5Q5kWq3Rsko2NIxRQUDMq6c+qUmKzt8fybVTB65Qpro4JBzko9IGtkCGkgvdTk7ElUtR2bgt3QEwvFCUgKTSftub6Mxo4Rrf+CDC7FeC9b0KKatemJBT43zdYgINfmtNy1BHEw8QMli4WcnUUc7aaxyCIeQsuj4HjenFQNo/sGQY0GyvD+JCwhaYiy3gNlvDqTBspFhbHLBejYFNT/kM2vdQlsFueLIHW8/DaeSO2PssDY4/rq7xcQKo=
   app:
-    master: nosleep-bot-produnction
+    master: nosleep-bot-production
     dev-flask: nosleep-bot-staging
   run:
     - "init"
-    - "web"
   after_deploy:

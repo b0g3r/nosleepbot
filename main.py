@@ -76,7 +76,7 @@ def start(user):
     user.send_message("Напишу тебе через 20 минут!")
     user.state = State.start
     user.time = datetime.now()
-    scheduler.set_event(user, Delay.check, check, kwargs={'user': user})
+    scheduler.set_event(user, check, Delay.check)
     user.save()
 
 

@@ -1,0 +1,28 @@
+<!doctype html>
+
+<title>Flaskr</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+$(function() {
+    function getMessages() {
+        $.ajax({
+            url: $SCRIPT_ROOT + '/messages',
+            type: 'post',
+            data: {id: $('.user').attr('id')},
+            success: getMessagesSuccess,
+            error: function(){alert('Ушел спатьки')}
+        });
+    }
+    function getMessagesSuccess(data) {
+        $('.user').text(data);
+        $('.user').html($('.user').html().replace(/\n/g,'<br/>'));
+        setTimeout(function(){getMessages();}, 3000);
+    }
+    getMessages()
+});
+</script>
+<div class=page>
+  <h1>Flaskr</h1>
+  {% block body %}<div class="user" id="{{ user_id }}"></div>{% endblock %}
+</div>

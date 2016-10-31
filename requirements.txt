@@ -1,0 +1,5 @@
+Flask
+telepot
+peewee
+gunicorn
+psycopg2

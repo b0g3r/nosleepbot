@@ -1,0 +1,28 @@
+language: python
+python:
+- '3.5'
+env:
+  global:
+  - FLASK_APP=main.py
+  - secure: JFCVlT9npH7P/W/fc0TiAbGvhHGgTeQF9NF1wK9t6vLut/WHBBdPedEO+7ZByKc3gfyzg
+      l3Zx3E2Vf3YLhU3klWZxzBzNYSD3w8XOUJrRDOHAcj8EbS74c3wvlmq08vcfn7VvsJPQ13mGWS2Ry997
+      4TK1qjVHPMbErt9s2ubR0L2dcFh8vh2gb8fjXNR4lCxLISni5y3dIkj5dUaeA3GvH0Gig/nTMDH7JdCw
+      VA3Ce6iL//tnNWpkv/Dr9vuyKRA/Ll91dWa/mH4X3Y/HsKF77aiEojTuLUx8zgsR+wk+RmVnb4u84nM5
+      kM/VGQ5wVd1tn86dYQlx5VwAwxwDF67wbdt+yURaGk1/wq6NYGqyV0LR6kSUAKd+kSmLjProLOkp6iRa
+      REOxaTtug/PQit7dAkyt6jJCbUzixId6K2ExCRLUimgr/iqSRO3W/6hg0hdSAfg5bDFusdmNm41sNVXK
+      939mKiKuBOLz1Ro+2yS6sC4Rl/LEkvRx3HMSb0kgoa+pnmE3Ucl9WEbWRQ6bmZOiHxSyW1uivfH2NWOK
+      l40hbFxuig18AJX9+I1seBEVqOniA8aE1mi2OmwhVV2MfzlaQLvM8rJ5E60p9l2/8zJPgO8jXvWDtyyh
+      M7HIa1JWd/U1c73g25BvSsLCRUkgTphnT0hDFOwqHbxbqtRSFDAkuw=
+  - DEBUG=1
+install: pip install -r requirements.txt
+script: echo "running"
+deploy:
+  provider: heroku
+  api_key:
+    secure: KGDWMVbjmXd7voMtK+2r48vWJBUZQChGx9yIqKwThhY9YTwU9V2lH4yQFy9RtnNT1+mfyFCD3tgiiX4mvOfOrF50hAqs5q0q+tKieuYzRPyVN+R8NF8jalDWy+aQZ6KeIy4e1d8IXJ2UkTAcjHPETMrci7cdAtY3HhgQrzR08iAiiwoMYiWOfR71dLL+xxbmlVbNETC1zYkkxkoiFcpqPOvds4zRMphzG1iOwCwsE0xTPzNrkQQsiOTwtue82bsfcyC9HAYBGHwiBpBFDdXCs+6L3OgoHPZSmuLhOX1vCr3Ka2Kvwx4tj7vAGjsiEozNCrAoGiT/uk6GjqGInkBspCnV0dhx5Aiz7+MeNUxUVoY0lp4QUg5QPRh7rWoHFaheYYZHUPn0u86EyueQozWzbHrAPqMZ4jYhPUD4FBHh2x7B5uS/z2K5Q5kWq3Rsko2NIxRQUDMq6c+qUmKzt8fybVTB65Qpro4JBzko9IGtkCGkgvdTk7ElUtR2bgt3QEwvFCUgKTSftub6Mxo4Rrf+CDC7FeC9b0KKatemJBT43zdYgINfmtNy1BHEw8QMli4WcnUUc7aaxyCIeQsuj4HjenFQNo/sGQY0GyvD+JCwhaYiy3gNlvDqTBspFhbHLBejYFNT/kM2vdQlsFueLIHW8/DaeSO2PssDY4/rq7xcQKo=
+  app:
+    master: nosleep-bot-production
+    dev-flask: nosleep-bot-staging
+  run:
+    - "init"
+  after_deploy:

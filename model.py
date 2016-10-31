@@ -34,12 +34,7 @@ def state_to_num(state):
         raise RuntimeError  # refactor this
 
 
-states = {
-    0: Start,
-    1: Waiting,
-    2: Checked,
-    3: Stop,
-}
+
 
 
 
@@ -70,8 +65,8 @@ class User(Model):
         """
         :type state: state.states._State
         """
-        state.set(self)
         self._state = state_to_num(state)
+        state.set(self)
 
     state = property(_get_state, _set_state)
 

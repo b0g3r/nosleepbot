@@ -6,12 +6,13 @@
 $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 $(function() {
     function getMessages() {
-        $.post($SCRIPT_ROOT + '/messages',
-                {
-                    id: $('.user').attr('id')
-                },
-                getMessagesSuccess
-        );
+        $.ajax({
+            url: $SCRIPT_ROOT + '/messages',
+            type: 'post',
+            data: {id: $('.user').attr('id')},
+            success: getMessagesSuccess,
+            error: function(){alert('Ушел спатьки')}
+        });
     }
     function getMessagesSuccess(data) {
         $('.user').text(data);

@@ -3,10 +3,10 @@ import telepot
 from datetime import datetime
 import os
 from scheduler import Scheduler
-from model import User, Delay, db_proxy
+from model import User, Delay, db_proxy, state_to_num
 from flask import Flask, request, Response, g, render_template, url_for
 from peewee import fn
-
+from state.states import Sleep
 
 scheduler = Scheduler()
 
@@ -52,81 +52,39 @@ def restart_users_event():
                               ", но тебе придется начать заново: /start")
             user.state = State.stop
             user.save()
-
-
-def check(user):
-    user.send_message("Ты спишь? А?")
-    user.state = State.wait_resp
-    user.time = datetime.now()
-    scheduler.set_event(user, wakeup, Delay.alarm)
-    user.save()
-
-
-def wakeup(user):
-    user.send_message("Ты что, уснула?")
-    if (datetime.now() - user.time).seconds < attempts*Delay.wake_up:
-        user.state = State.wake_up
-        user.save()
-        scheduler.set_event(user, wakeup, Delay.wake_up)
-    else:
-        user.state = State.stop
-        user.save()
-
-        app.logger.info('%s %s %s', datetime.now(), user.user_id, 'уснул')
-
-
-def start(user):
-    user.send_message("Напишу тебе через 20 минут!")
-    user.state = State.start
-    user.time = datetime.now()
-    scheduler.set_event(user, check, Delay.check)
-    user.save()
-
-
-def stop(user):
-    user.send_message("Теперь можешь ложиться спать")
-    user.state = State.stop
-    user.time = datetime.now()
-    user.messages = ''
-    scheduler.cancel_event(user)
-    app.logger.info('%s %s %s', datetime.now(), user.user_id, 'ушел спать')
-    user.save()
 '''
+
 
 def handle(message):
     content_type, chat_type, user_id = telepot.glance(message)
     app.logger.info('%s %s', message['chat']['first_name'], message['text'])
-    user, _ = User.get_or_create(user_id=str(user_id))
+    user, create = User.get_or_create(user_id=str(user_id))
+    if create:
+        from state.states import Start
+        user.state = Start
+        return
     user.scheduler = scheduler
+    # TODO: кинуть в хендлеры?
     user.messages += 'соня: %s\n' % message['text']
-    print(user.state)
-    user.save()
     user.state.handle(user, message['text'])
-    '''
-    if '/start' in message['text']:
-        start(user)
-    elif '/stop' in message['text']:
-        stop(user)
-    else:
-        if user.state == State.wait_resp or user.state == State.wake_up:
-            user.send_message("Смотри мне!")
-            scheduler.cancel_event(user)
-            start(user)
-    '''
+
 
 @app.route('/messages', methods=['POST'])
 def get_messages():
-    id = request.form['id']
-    messages = User.get(User.id == id).messages
-    print(messages)
-    return messages
+    user = User.get(User.id == request.form['id'])
+    if user.state != Sleep:
+        messages = user.messages
+        return messages
+    else:
+        return "", 404
+
 
 
 # TODO: Запилить "Пользователь ушел спать" (пусть /messages возвращает ошибку 404, а ajax это отлавливает?)
 # TODO: Запилить красивую верстку
 @app.route('/')
 def index():
-    #q = User.select().where(User.state != State.stop)
+    q = User.select().where(User._state != state_to_num(Sleep))
     if q.exists():
         return render_template('index.html', user_id=q.order_by(fn.Random()).get().id)
     else:

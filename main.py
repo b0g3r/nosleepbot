@@ -62,7 +62,7 @@ def handle(message):
     if create:
         from state.states import Start
         user.state = Start
-        return
+        return  # костыль, чтобы /start не переводило в Waiting
     user.scheduler = scheduler
     # TODO: кинуть в хендлеры?
     user.messages += 'соня: %s\n' % message['text']

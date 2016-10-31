@@ -1,2 +1,2 @@
 web: gunicorn main:app --log-file -
-init: python model.py
+init: python init.py
